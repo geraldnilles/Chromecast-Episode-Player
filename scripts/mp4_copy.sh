@@ -20,7 +20,7 @@ cd "$(dirname "$0")"
 ffmpeg -i "$1" \
     -c:v copy \
     -c:a libopus -ac 2 -b:a 128k \
-    library/Friends/$( basename $1 ).mp4
+    ../library/Friends/$( basename $1 ).mp4
 
 
 

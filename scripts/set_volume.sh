@@ -2,9 +2,11 @@
 
 cd "$(dirname "$0")"
 
+cd .. 
+
 . venv/bin/activate
 
 cd src 
 
-python play.py
+python set_volume.py
 
