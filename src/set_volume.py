@@ -25,7 +25,6 @@ cast.wait()
 
 controller = cast.socket_client.receiver_controller
 
-print(controller._status_listeners)
 
 print(controller.status.volume_level)
 cast.set_volume(0.5)

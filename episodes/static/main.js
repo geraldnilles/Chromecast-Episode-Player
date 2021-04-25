@@ -1,36 +1,35 @@
 
-function bind_forward(){
-    var buttons = document.querySelectorAll("button.forward");
+function bind_show(){
+    var buttons = document.querySelectorAll("button.show");
 	for (var i = 0; i < buttons.length; i++){
         var b = buttons[i];
         b.onclick = function(e){
             // Remove the on-click for now so that we cant add more buttons
-            var value = e.target.closest("button").value;
-            send_request("forward/"+value);
+            var value = e.target.closest("button").innerText;
+            send_request("show/"+value);
         }
     }
 }
 
-function bind_rewind(){
-    var buttons = document.querySelectorAll("button.rewind");
+function bind_volume(){
+    var buttons = document.querySelectorAll("button.volume");
 	for (var i = 0; i < buttons.length; i++){
         var b = buttons[i];
         b.onclick = function(e){
             // Remove the on-click for now so that we cant add more buttons
             var value = e.target.closest("button").value;
-            send_request("rewind/"+value);
+            send_request("volume/"+value);
         }
     }
 }
 
-function bind_reset(){
-    var buttons = document.querySelectorAll("button.reset");
+function bind_stop(){
+    var buttons = document.querySelectorAll("button.stop");
 	for (var i = 0; i < buttons.length; i++){
         var b = buttons[i];
         b.onclick = function(e){
             // Remove the on-click for now so that we cant add more buttons
-            var value = e.target.closest("button").value;
-            send_request("reset");
+            send_request("stop");
         }
     }
 }
@@ -50,9 +49,9 @@ function send_request(url){
 
 
 function bind_buttons(){
-    bind_forward();
-    bind_rewind();
-    bind_reset();
+    bind_show();
+    bind_volume();
+    bind_stop();
 }
 
 bind_buttons();

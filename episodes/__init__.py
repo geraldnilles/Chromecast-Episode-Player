@@ -10,8 +10,6 @@ def create_app(test_config=None):
 
     app.config.from_mapping(
         SECRET_KEY='dev',
-        HISTORY=os.path.join(app.instance_path, 'history.json'),
-        DATABASE=os.path.join(app.instance_path, 'todos.json'),
     )
 
     try:
@@ -31,21 +29,22 @@ def create_app(test_config=None):
     def library(filename):
         return send_from_directory(app.root_path+"/../library/",filename)
 
-    @app.route('/rewind/<int:t_skip>',methods=['GET'])
-    def rewind(t_skip=30):
-        controller.q.put(["rewind",t_skip])
-        return "Rewind"
+    @app.route('/show/<name>',methods=['GET'])
+    def rewind(name="Friends"):
+        # TODO Check if a show is aleady in the queue and dont add.
+        controller.q.put(["show",name])
+        return "Playing some episodes"
 
-    @app.route('/forward/<int:t_skip>',methods=['GET'])
-    def forward(t_skip=30):
-        controller.q.put(["forward",t_skip])
-        return "Fast Forward"
+    @app.route('/volume/<int:level>',methods=['GET'])
+    def forward(level=30):
+        controller.q.put(["volume",level])
+        return "Adjusting the volume"
 
 
-    @app.route('/reset',methods=['GET'])
+    @app.route('/stop',methods=['GET'])
     def reset():
-        controller.q.put(["reset",None])
-        return "Resetting Chrome Connection"
+        controller.q.put(["stop",None])
+        return "Stopping Playback"
 
     #from . import api
     #app.register_blueprint(api.bp)

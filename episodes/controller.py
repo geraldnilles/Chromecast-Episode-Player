@@ -16,11 +16,13 @@ class Controller:
     def find_devices(self):
         self.chromecasts = pychromecast.get_chromecasts()[0]
 
-    def select_device(self,name="Living Room TV"):
+    def select_device(self,name="Bedroom TV"):
         for c in self.chromecasts:
             if c.device.friendly_name == name:
                 self.device = c
-   
+    
+    # Probalby wont use this
+    """   
     def skip(self,t_seconds):
         mc = self.device.media_controller
         if not mc.status.supports_seek:
@@ -36,7 +38,48 @@ class Controller:
         
         #t_now = mc.status.current_time
         #mc.seek(t_now+t_seconds)
+    """
 
+    def volume(self,level):
+        rc = self.device.socket_client.receiver_controller
+        prev = rc.status.volume_level
+        print ("Volume currently set to ",rc.status.volume_level)
+
+        # Special Cases: 1 will be mean step volume down 5%.  
+        #                2 will mean volume up 5%
+        #                Anything else will be interpreted as a percentage
+
+        if (level == 1):
+            # Down 5%
+            level = prev - 0.05
+        elif (level == 2):
+            # Up 5%
+            level = prev + 0.05
+        else:
+            level = level/100.0
+            
+        rc.set_volume(level)
+
+        def cb_fun(status):
+            print ("Volume now set to ",rc.status.volume_level)
+        rc.update_status(cb_fun)
+
+    def show(self,name):
+        print ("Playing ", name)
+        num = 2
+        mc = self.device.media_controller
+
+        # Start First Video
+        mc.play_media("http://10.0.0.200:8765/library/Friends/0602.mkv.mp4",'video/mp4')
+        mc.block_until_active(10)
+
+        # Enqueue the Other Episodes
+        mc.play_media("http://10.0.0.200:8765/library/Friends/0603.mkv.mp4",'video/mp4', 
+                        enqueue=True)
+
+
+    def stop(self):
+        self.device.quit_app()
 
     def parse_command(self,cmd):
         if cmd[0] == "reset":
@@ -47,14 +90,19 @@ class Controller:
             print("Ready")
             return
 
-        if cmd[0] == "forward":
-            self.skip(cmd[1]) 
-            print("Fast Forward")
+        if cmd[0] == "stop":
+            self.stop()
+            print("Stopping")
             return
 
-        if cmd[0] == "rewind":
-            self.skip(-1*cmd[1]) 
-            print("Jump Back")
+        if cmd[0] == "volume":
+            self.volume(cmd[1]) 
+            print("Adjusting Volume")
+            return
+
+        if cmd[0] == "show":
+            self.show(cmd[1]) 
+            print("Starting a Show")
             return
 
 
@@ -72,9 +120,9 @@ def worker():
 def init():
     threading.Thread(target=worker, daemon=True ).start()
 
-
-def get_queue():
-    return q
+# TODO Remove this
+#def get_queue():
+#    return q
     
 
 if __name__ == "__main__":
