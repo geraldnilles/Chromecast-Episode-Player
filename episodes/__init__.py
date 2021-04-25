@@ -22,8 +22,13 @@ def create_app(test_config=None):
         controller.init()
 
     @app.route('/')
+    @app.route('/html')
     def main(name=None):
         return render_template('main.html', name=name)
+
+    #@app.route('/html')
+    #def main(name=None):
+    #    return render_template('main.html', name=name)
 
     @app.route('/library/<path:filename>')
     def library(filename):

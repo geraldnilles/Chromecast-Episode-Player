@@ -69,7 +69,7 @@ class Controller:
 
     def show(self,name):
         print ("Playing ", name)
-        num = 3
+        num = 5
         mc = self.device.media_controller
 
         # Get the aboslute path
@@ -94,7 +94,7 @@ class Controller:
         # If number of library episodes is more than "num", then randomly
         # select a chunk of sequential episodes
 
-        if len(eps) > num
+        if len(eps) > num:
             i = random.randrange(len(eps)-num+1)
             eps = eps[i:i+num]
 
