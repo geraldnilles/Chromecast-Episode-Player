@@ -23,12 +23,14 @@ def create_app(test_config=None):
 
     @app.route('/')
     @app.route('/html')
-    def main(name=None):
-        return render_template('main.html', name=name)
+    def main():
+        libdirs = []
+        libpath = os.path.abspath( app.root_path+"/../library" )
+        for f in os.listdir( libpath ):
+            if os.path.isdir( os.path.join( libpath,f ) ):
+                libdirs.append( f )
 
-    #@app.route('/html')
-    #def main(name=None):
-    #    return render_template('main.html', name=name)
+        return render_template('main.html', shows=libdirs )
 
     @app.route('/library/<path:filename>')
     def library(filename):

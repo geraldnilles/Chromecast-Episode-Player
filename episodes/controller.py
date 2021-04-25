@@ -8,6 +8,9 @@ import os
 import random
 
 
+#DEFAULT_CHROMECAST_NAME = "Living Room TV"
+DEFAULT_CHROMECAST_NAME = "Bedroom TV"
+
 q = queue.Queue()
 
 class Controller:
@@ -19,7 +22,7 @@ class Controller:
     def find_devices(self):
         self.chromecasts = pychromecast.get_chromecasts()[0]
 
-    def select_device(self,name="Bedroom TV"):
+    def select_device(self,name=DEFAULT_CHROMECAST_NAME):
         for c in self.chromecasts:
             if c.device.friendly_name == name:
                 self.device = c
@@ -117,7 +120,8 @@ class Controller:
 
 
     def stop(self):
-        self.device.quit_app()
+        mc = self.device.media_controller
+        mc.stop()
 
     def parse_command(self,cmd):
         if cmd[0] == "reset":

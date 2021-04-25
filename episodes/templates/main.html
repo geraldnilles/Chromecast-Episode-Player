@@ -15,10 +15,10 @@
     <div class="text-center">
         <h2>Random Episode Player</h2>
         <div class="pb-3">
-            <!-- TODO Look at library directory to generate this list -->
             <!-- TODO Browse Videos in order to watch in chrome browser -->
-            <button class="btn-lg btn-danger show">Friends</button>
-            <button class="btn-lg btn-danger show">How I Met Your Mother</button>
+            {% for show in shows %}
+            <button class="btn-lg btn-danger show">{{ show }}</button>
+            {% endfor %}
         </div>
         <div class="pb-3">
             <button class="btn-lg btn-dark stop">Stop</button>
