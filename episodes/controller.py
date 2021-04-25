@@ -4,6 +4,9 @@ import time
 import pychromecast
 import threading
 import queue
+import os
+import random
+
 
 q = queue.Queue()
 
@@ -66,16 +69,51 @@ class Controller:
 
     def show(self,name):
         print ("Playing ", name)
-        num = 2
+        num = 3
         mc = self.device.media_controller
 
-        # Start First Video
-        mc.play_media("http://10.0.0.200:8765/library/Friends/0602.mkv.mp4",'video/mp4')
-        mc.block_until_active(10)
+        # Get the aboslute path
+        lib_path = os.path.abspath(
+            # Jump back 1 directory and into the selcted show folder
+            os.path.join(
+                # Strip out the basename
+                os.path.dirname(
+                    # Path of current file
+                    os.path.abspath(__file__)
+                )
+            ,"..","library",name )
+            )
+        try:
+            eps = os.listdir(lib_path)
+        except:
+            print("Show was not found")
+            eps = []
 
-        # Enqueue the Other Episodes
-        mc.play_media("http://10.0.0.200:8765/library/Friends/0603.mkv.mp4",'video/mp4', 
-                        enqueue=True)
+        # TODO Sort the episodes by name
+
+        # If number of library episodes is more than "num", then randomly
+        # select a chunk of sequential episodes
+
+        if len(eps) > num
+            i = random.randrange(len(eps)-num+1)
+            eps = eps[i:i+num]
+
+        # We want the first video to be nromal. and all subsequent videos be
+        # enqueued
+        # TODO Dynamically look up the local IP address
+        enqueue = False
+        for e in eps:
+            if enqueue:
+                print ("Queueing up ",e)
+                mc.play_media("http://10.0.0.200:8765/library/"+name+"/"+e,
+                                'video/mp4', enqueue=enqueue)
+            else:
+                print ("Starting with ",e)
+                mc.play_media("http://10.0.0.200:8765/library/"+name+"/"+e,
+                                'video/mp4', enqueue=enqueue)
+                mc.block_until_active(10)
+                enqueue = True
+
 
 
     def stop(self):
