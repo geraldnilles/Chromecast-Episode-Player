@@ -34,6 +34,17 @@ function bind_stop(){
     }
 }
 
+function bind_reset(){
+    var buttons = document.querySelectorAll("button.reset");
+	for (var i = 0; i < buttons.length; i++){
+        var b = buttons[i];
+        b.onclick = function(e){
+            // Remove the on-click for now so that we cant add more buttons
+            send_request("reset");
+        }
+    }
+}
+
 function send_request(url){
     var request = new XMLHttpRequest();
     request.onreadystatechange = function() {
@@ -52,6 +63,7 @@ function bind_buttons(){
     bind_show();
     bind_volume();
     bind_stop();
+    bind_reset();
 }
 
 bind_buttons();

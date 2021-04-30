@@ -7,6 +7,8 @@ import queue
 import os
 import random
 
+from datetime import datetime
+
 
 #DEFAULT_CHROMECAST_NAME = "Living Room TV"
 DEFAULT_CHROMECAST_NAME = "Bedroom TV"
@@ -20,11 +22,18 @@ class Controller:
         self.device = None
     
     def find_devices(self):
+        print ("Looking for Chromecasts")
         self.chromecasts = pychromecast.get_chromecasts()[0]
 
     def select_device(self,name=DEFAULT_CHROMECAST_NAME):
+        if self.chromecasts == None:
+            print ("No Chromecast Found")
+            self.device = None
+            return
+
         for c in self.chromecasts:
             if c.device.friendly_name == name:
+                print ("Chromecast Selected")
                 self.device = c
     
     # Probalby wont use this
@@ -69,6 +78,13 @@ class Controller:
         def cb_fun(status):
             print ("Volume now set to ",rc.status.volume_level)
         rc.update_status(cb_fun)
+
+    def check_status(self):
+        rc = self.device.socket_client.receiver_controller
+        def cb_fun(status):
+            print ("Chromecast Status: ",rc.status)
+        rc.update_status(cb_fun)
+        
 
     def show(self,name):
         print ("Playing ", name)
@@ -116,6 +132,7 @@ class Controller:
                                 'video/mp4', enqueue=enqueue)
                 mc.block_until_active(10)
                 enqueue = True
+                time.sleep(2)
 
 
 
@@ -154,13 +171,27 @@ def worker():
     c.select_device()
     c.device.wait()
     while True:
-        cmd = q.get()
-        c.parse_command(cmd)
-        q.task_done()
+        try:
+            cmd = q.get(timeout=300)
+            c.parse_command(cmd)
+            q.task_done()
+        except queue.Empty:
+            # This is a heartbeat to make sure the worker is still running
+            my_date = datetime.now()
+            print(my_date.isoformat(),"Chromecast Worker Keep-Alive")
+            c.check_status()
+
+def worker_disconnect_wrapper():
+    print("Starting Persistent Chromecast Worker")
+    while True:
+        try:
+            worker()
+        except pychromecast.error.NotConnected:
+            print ("Chromecast Disconnected - Resetting the Controller worker")
 
 
 def init():
-    threading.Thread(target=worker, daemon=True ).start()
+    threading.Thread(target=worker_disconnect_wrapper, daemon=True ).start()
 
 # TODO Remove this
 #def get_queue():

@@ -10,23 +10,26 @@
 
 </head>
 <body>
-<div class="container" style="background:aquamarine">
+<div class="mt-3 p-3 container" style="background:aquamarine">
     <!-- TODO Drop down arrow to select num of episodes -->
     <div class="text-center">
         <h2>Random Episode Player</h2>
         <div class="pb-3">
             <!-- TODO Browse Videos in order to watch in chrome browser -->
             {% for show in shows %}
-            <button class="btn-lg btn-danger show">{{ show }}</button>
+            <button class="btn-lg btn-primary show">{{ show }}</button>
             {% endfor %}
         </div>
         <div class="pb-3">
-            <button class="btn-lg btn-dark stop">Stop</button>
+            <button class="btn-lg btn-danger stop">Stop</button>
         </div>
         <div class="pb-3">
-            <button value=1 class="btn-lg btn-success volume"><i class="material-icons">volume_down</i></button>
-            <button value=50 class="btn-lg btn-success volume">50%</button>
-            <button value=2 class="btn-lg btn-success volume"><i class="material-icons">volume_up</i></button>
+            <button class="btn-lg btn-dark reset">Reset Connection</button>
+        </div>
+        <div class="pb-3">
+            <button value=1 class="btn-lg btn-info volume"><i class="material-icons">volume_down</i></button>
+            <button value=50 class="btn-lg btn-info volume">50%</button>
+            <button value=2 class="btn-lg btn-info volume"><i class="material-icons">volume_up</i></button>
         </div>
     </div>
 </div>

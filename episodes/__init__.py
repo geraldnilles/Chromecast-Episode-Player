@@ -49,9 +49,14 @@ def create_app(test_config=None):
 
 
     @app.route('/stop',methods=['GET'])
-    def reset():
+    def stop():
         controller.q.put(["stop",None])
         return "Stopping Playback"
+
+    @app.route('/reset',methods=['GET'])
+    def reset():
+        controller.q.put(["reset",None])
+        return "Refreshing"
 
     #from . import api
     #app.register_blueprint(api.bp)
