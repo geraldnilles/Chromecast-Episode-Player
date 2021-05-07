@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 import time
 import pychromecast
 import threading
@@ -23,18 +24,20 @@ class Controller:
     
     def find_devices(self):
         print ("Looking for Chromecasts")
-        self.chromecasts = pychromecast.get_chromecasts()[0]
-
-    def select_device(self,name=DEFAULT_CHROMECAST_NAME):
-        if self.chromecasts == None:
+        chromecasts , browser = pychromecast.get_listed_chromecasts( friendly_names=[DEFAULT_CHROMECAST_NAME]  )
+        if not chromecasts:
             print ("No Chromecast Found")
             self.device = None
-            return
+        else:
+            print ("Chromecast Found")
+            self.device = chromecasts[0]
+        browser.stop_discovery()
 
-        for c in self.chromecasts:
-            if c.device.friendly_name == name:
-                print ("Chromecast Selected")
-                self.device = c
+
+    def reset(self):
+        if not self.device.is_idle:
+            self.device.quit_app()
+            time.sleep(5)
     
     # Probalby wont use this
     """   
@@ -110,18 +113,19 @@ class Controller:
 
         # TODO Sort the episodes by name
 
+
         # If number of library episodes is more than "num", then randomly
         # select a chunk of sequential episodes
 
         if len(eps) > num:
             i = random.randrange(len(eps)-num+1)
-            eps = eps[i:i+num]
+            sel = eps[i:i+num]
 
         # We want the first video to be nromal. and all subsequent videos be
         # enqueued
         # TODO Dynamically look up the local IP address
         enqueue = False
-        for e in eps:
+        for e in sel:
             if enqueue:
                 print ("Queueing up ",e)
                 mc.play_media("http://10.0.0.200:8765/library/"+name+"/"+e,
@@ -144,8 +148,8 @@ class Controller:
         if cmd[0] == "reset":
             print("Reconnectig to Chromecast...")
             self.find_devices()
-            self.select_device()
             self.device.wait()
+            self.reset()
             print("Ready")
             return
 
@@ -168,11 +172,10 @@ class Controller:
 def worker():
     c = Controller()
     c.find_devices()
-    c.select_device()
     c.device.wait()
     while True:
         try:
-            cmd = q.get(timeout=300)
+            cmd = q.get(timeout=30*60)
             c.parse_command(cmd)
             q.task_done()
         except queue.Empty:
@@ -191,7 +194,9 @@ def worker_disconnect_wrapper():
 
 
 def init():
+
     threading.Thread(target=worker_disconnect_wrapper, daemon=True ).start()
+
 
 # TODO Remove this
 #def get_queue():
@@ -202,7 +207,6 @@ if __name__ == "__main__":
 
     c = Controller()
     c.find_devices()
-    c.select_device()
     c.device.wait()
     time.sleep(5)
     for x in range(10):
