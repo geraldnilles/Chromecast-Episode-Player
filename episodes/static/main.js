@@ -6,7 +6,8 @@ function bind_show(){
         b.onclick = function(e){
             // Remove the on-click for now so that we cant add more buttons
             var value = e.target.closest("button").innerText;
-            send_request("show/"+value);
+            var count = document.querySelector("input.episodeCount").value;
+            send_request("show/"+value+"/"+count);
         }
     }
 }
@@ -58,12 +59,27 @@ function send_request(url){
     
 }
 
+function bind_slider(){
+    var sliders = document.querySelectorAll("input.episodeCount");
+	for (var i = 0; i < sliders.length; i++){
+        var s = sliders[i];
+        // s.value = 5;
+        document.querySelector("span.episodeCount").innerText = s.value;
+        s.onchange = function(e){
+            //send_request("reset");
+            // alert("Slider Moved "+e.target.value);
+            document.querySelector("span.episodeCount").innerText = e.target.value;
+        }
+    }
+}
+
 
 function bind_buttons(){
     bind_show();
     bind_volume();
     bind_stop();
     bind_reset();
+    bind_slider();
 }
 
 bind_buttons();

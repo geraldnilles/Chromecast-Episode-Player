@@ -67,9 +67,8 @@ class Controller:
         rc.update_status(cb_fun)
         
 
-    def show(self,name):
+    def show(self,name, num):
         print ("Playing ", name)
-        num = 5
         mc = self.device.media_controller
 
         # Get the aboslute path
@@ -142,7 +141,7 @@ class Controller:
             return
 
         if cmd[0] == "show":
-            self.show(cmd[1]) 
+            self.show(cmd[1], cmd[2]) 
             print("Starting a Show")
             return
 

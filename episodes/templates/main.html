@@ -20,6 +20,12 @@
             <button class="btn-lg btn-primary show">{{ show }}</button>
             {% endfor %}
         </div>
+        <div class="pb-3  " >
+            <label for="episodeCount">Number of Episodes: <span class="episodeCount"></span></label>
+            <div class="d-flex justify-content-center " >
+                <input type="range" class="w-50 form-control-range episodeCount" min="1" max="8" value="5" style="height: 50px">
+            </div>
+        </div>
         <div class="pb-3">
             <button class="btn-lg btn-danger stop">Stop</button>
         </div>
