@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 
-
 import time
 import pychromecast
-import threading
-import queue
 import os
 import random
 
-from datetime import datetime
+from multiprocessing.connection import Listener
+from multiprocessing.connection import Client
 
+from datetime import datetime
 
 #DEFAULT_CHROMECAST_NAME = "Living Room TV"
 DEFAULT_CHROMECAST_NAME = "Bedroom TV"
 
-q = queue.Queue()
+# Put the socket into the instance folder
+UNIX_SOCKET_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)),"..","instance","cast_socket")
 
 class Controller:
 
@@ -169,48 +169,45 @@ class Controller:
             return
 
 
-def worker():
+def main():
     c = Controller()
     c.find_devices()
     c.device.wait()
-    while True:
-        try:
-            cmd = q.get(timeout=30*60)
-            c.parse_command(cmd)
-            q.task_done()
-        except queue.Empty:
-            # This is a heartbeat to make sure the worker is still running
-            my_date = datetime.now()
-            print(my_date.isoformat(),"Chromecast Worker Keep-Alive")
-            c.check_status()
 
-def worker_disconnect_wrapper():
+    with Listener(UNIX_SOCKET_PATH , authkey=b'secret password') as listener:
+
+        while True:
+            with listener.accept() as conn:
+                cmd = conn.recv()
+                print(repr(cmd))
+                c.parse_command(cmd)
+                conn.send("OK")
+
+
+# This is a function can be used by clients on other machines to send messages to this controller
+def sendMsg(obj):
+    with Client(UNIX_SOCKET_PATH , authkey=b'secret password') as conn:
+        conn.send(obj) 
+        resp = conn.recv()
+        return resp
+
+# Main Error Handling Wrapper
+#
+# This while loop will restart the main loop whenever there is an "normal
+# error".  For example, if the wifi goes down for a few minutes and the
+# chromecast becomes unreachable, this will restart it
+def main_disconnect_wrapper():
     print("Starting Persistent Chromecast Worker")
     while True:
         try:
-            worker()
+            main()
         except pychromecast.error.NotConnected:
             print ("Chromecast Disconnected - Resetting the Controller worker")
 
 
-def init():
-
-    threading.Thread(target=worker_disconnect_wrapper, daemon=True ).start()
-
-
-# TODO Remove this
-#def get_queue():
-#    return q
     
 
 if __name__ == "__main__":
 
-    c = Controller()
-    c.find_devices()
-    c.device.wait()
-    time.sleep(5)
-    for x in range(10):
-        time.sleep(20)
-        print("Seek")
-        c.ff_30sec()
+    main_disconnect_wrapper()
 

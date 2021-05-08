@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from flask import render_template
 from flask import send_from_directory
+
 from . import controller
 
 def create_app(test_config=None):
@@ -17,9 +18,6 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # Start the Chromecast Controller THread
-    with app.app_context():
-        controller.init()
 
     @app.route('/')
     @app.route('/html')
@@ -39,23 +37,23 @@ def create_app(test_config=None):
     @app.route('/show/<name>',methods=['GET'])
     def rewind(name="Friends"):
         # TODO Check if a show is aleady in the queue and dont add.
-        controller.q.put(["show",name])
+        controller.sendMsg(["show",name])
         return "Playing some episodes"
 
     @app.route('/volume/<int:level>',methods=['GET'])
     def forward(level=30):
-        controller.q.put(["volume",level])
+        controller.sendMsg(["volume",level])
         return "Adjusting the volume"
 
 
     @app.route('/stop',methods=['GET'])
     def stop():
-        controller.q.put(["stop",None])
+        controller.sendMsg(["stop",None])
         return "Stopping Playback"
 
     @app.route('/reset',methods=['GET'])
     def reset():
-        controller.q.put(["reset",None])
+        controller.sendMsg(["reset",None])
         return "Refreshing"
 
     #from . import api
