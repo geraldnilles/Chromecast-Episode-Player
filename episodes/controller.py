@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 
 import time
-import pychromecast
 import os
 import random
-
-from multiprocessing.connection import Listener
-from multiprocessing.connection import Client
 
 from datetime import datetime
 
@@ -39,24 +35,6 @@ class Controller:
             self.device.quit_app()
             time.sleep(5)
     
-    # Probalby wont use this
-    """   
-    def skip(self,t_seconds):
-        mc = self.device.media_controller
-        if not mc.status.supports_seek:
-            print("App cannot skip.  Ignoring Request")
-            return
-        def cb_fun(status):
-            print("Skipping")
-            t_now = mc.status.current_time
-            mc.seek(t_now+t_seconds)
-            
-        mc.update_status(cb_fun)
-        print("Refreshing Data")
-        
-        #t_now = mc.status.current_time
-        #mc.seek(t_now+t_seconds)
-    """
 
     def volume(self,level):
         rc = self.device.socket_client.receiver_controller
@@ -170,6 +148,7 @@ class Controller:
 
 
 def main():
+    from multiprocessing.connection import Listener
     c = Controller()
     c.find_devices()
     c.device.wait()
@@ -184,8 +163,10 @@ def main():
                 conn.send("OK")
 
 
-# This is a function can be used by clients on other machines to send messages to this controller
+# This is a function can be used by clients on other machines to send messages
+# to this controller
 def sendMsg(obj):
+    from multiprocessing.connection import Client
     with Client(UNIX_SOCKET_PATH , authkey=b'secret password') as conn:
         conn.send(obj) 
         resp = conn.recv()
@@ -204,10 +185,15 @@ def main_disconnect_wrapper():
         except pychromecast.error.NotConnected:
             print ("Chromecast Disconnected - Resetting the Controller worker")
 
-
+def cleanup(*args):
+    print("Exiting gracefully")
+    exit(0)
     
 
 if __name__ == "__main__":
+    import signal
+    import pychromecast
+    signal.signal(signal.SIGINT, cleanup)
 
     main_disconnect_wrapper()
 
