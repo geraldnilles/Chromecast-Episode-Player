@@ -135,6 +135,11 @@ class Controller:
             print("Stopping")
             return
 
+        if cmd[0] == "status":
+            self.check_status()
+            print("Checking Status")
+            return
+
         if cmd[0] == "volume":
             self.volume(cmd[1]) 
             print("Adjusting Volume")
