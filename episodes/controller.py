@@ -12,6 +12,10 @@ DEFAULT_CHROMECAST_NAME = "Bedroom TV"
 # Put the socket into the instance folder
 UNIX_SOCKET_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)),"..","instance","cast_socket")
 
+class ChromecastNotFound(Exception):
+    pass
+
+
 class Controller:
 
     def __init__(self):
@@ -24,6 +28,8 @@ class Controller:
         if not chromecasts:
             print ("No Chromecast Found")
             self.device = None
+            raise ChromecastNotFound
+
         else:
             print ("Chromecast Found")
             self.device = chromecasts[0]
@@ -188,6 +194,9 @@ def main_disconnect_wrapper():
             main()
         except pychromecast.error.NotConnected:
             print ("Chromecast Disconnected - Resetting the Controller worker")
+        except ChromecastNotFound:
+            print ("Cannot find a chromecast. Sleeping 60 second before retrying")
+            time.sleep(60)
 
 def cleanup(*args):
     print("Exiting gracefully")
