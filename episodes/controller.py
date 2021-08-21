@@ -26,9 +26,18 @@ class Controller:
         print ("Looking for Chromecasts")
         chromecasts , browser = pychromecast.get_listed_chromecasts( friendly_names=[DEFAULT_CHROMECAST_NAME]  )
         if not chromecasts:
-            print ("No Chromecast Found")
-            self.device = None
-            raise ChromecastNotFound
+            cs = pychromecast.get_chromecasts()
+            print("Quick lookup failed, trying manual")
+            for c in cs[0]:
+                print(c.device.friendly_name)
+                if c.device.friendly_name == DEFAULT_CHROMECAST_NAME:
+                    print ("Chromecast Found")
+                    self.device = c
+                    break
+            else:
+                print ("No Chromecast Found")
+                self.device = None
+                raise ChromecastNotFound
 
         else:
             print ("Chromecast Found")
