@@ -18,33 +18,44 @@ class ChromecastNotFound(Exception):
 
 class Controller:
 
-    def __init__(self):
+    def __init__(self,name = DEFAULT_CHROMECAST_NAME):
+        self.name = name;
         self.chromecasts = None 
         self.device = None
+
+        self.zconf = zeroconf.Zeroconf()
+
+        self.browser = pychromecast.discovery.CastBrowser(pychromecast.discovery.SimpleCastListener(self.cast_add, self.cast_remove, self.cast_update), self.zconf)
+        self.browser.start_discovery()
+
+    def cast_add(self, uuid, _service):
+        print("New Cast Found:",uuid)
+        self.cast_parse(uuid)
+
+    def cast_remove(self, uuid, _service, cast_info):
+        print("Removing Cast:",uuid)
+        if self.browser.devices[uuid].friendly_name != self.name:
+            return
+        info = self.browser.devices[uuid]
+        print (info.friendly_name,"Removed")
+        self.device = None
+        
+
+    def cast_update(self, uuid, _service):
+        print("Updating Cast:",uuid)
+        self.cast_parse(uuid)
+
+    def cast_parse(self,uuid):
+        if self.browser.devices[uuid].friendly_name != self.name:
+            return
+
+        info = self.browser.devices[uuid]
+
+        print (info.friendly_name,"Updated")
+        self.device =  pychromecast.get_chromecast_from_cast_info(info,self.zconf)
+        self.device.wait()
+        print (info.friendly_name,"is ready")
     
-    def find_devices(self):
-        print ("Looking for Chromecasts")
-        chromecasts , browser = pychromecast.get_listed_chromecasts( friendly_names=[DEFAULT_CHROMECAST_NAME]  )
-        if not chromecasts:
-            cs = pychromecast.get_chromecasts()
-            print("Quick lookup failed, trying manual")
-            for c in cs[0]:
-                print(c.device.friendly_name)
-                if c.device.friendly_name == DEFAULT_CHROMECAST_NAME:
-                    print ("Chromecast Found")
-                    self.device = c
-                    break
-            else:
-                print ("No Chromecast Found")
-                self.device = None
-                raise ChromecastNotFound
-
-        else:
-            print ("Chromecast Found")
-            self.device = chromecasts[0]
-        browser.stop_discovery()
-
-
     def reset(self):
         if not self.device.is_idle:
             self.device.quit_app()
@@ -133,14 +144,17 @@ class Controller:
 
 
     def stop(self):
-        mc = self.device.media_controller
-        mc.stop()
+        self.device.quit_app()
 
     def parse_command(self,cmd):
+        # If device is None, that means no chromecast was detected.  We will
+        # not attempt to execute any commands
+        if self.device == None:
+            print ("Chromecast Not Connected. Ingoring Command")
+            return
+            
         if cmd[0] == "reset":
             print("Reconnectig to Chromecast...")
-            self.find_devices()
-            self.device.wait()
             self.reset()
             print("Ready")
             return
@@ -169,8 +183,6 @@ class Controller:
 def main():
     from multiprocessing.connection import Listener
     c = Controller()
-    c.find_devices()
-    c.device.wait()
 
     with Listener(UNIX_SOCKET_PATH , authkey=b'secret password') as listener:
 
@@ -178,7 +190,11 @@ def main():
             with listener.accept() as conn:
                 cmd = conn.recv()
                 print(repr(cmd))
-                c.parse_command(cmd)
+                try:
+                    c.parse_command(cmd)
+                except pychromecast.error.NotConnected:
+                    print ("Connection Lost. Clearing Connection")
+                    c.device = None
                 conn.send("OK")
 
 
@@ -198,6 +214,8 @@ def sendMsg(obj):
 # chromecast becomes unreachable, this will restart it
 def main_disconnect_wrapper():
     print("Starting Persistent Chromecast Worker")
+    main()
+    """
     while True:
         try:
             main()
@@ -206,6 +224,7 @@ def main_disconnect_wrapper():
         except ChromecastNotFound:
             print ("Cannot find a chromecast. Sleeping 60 second before retrying")
             time.sleep(60)
+    """
 
 def cleanup(*args):
     print("Exiting gracefully")
@@ -215,6 +234,7 @@ def cleanup(*args):
 if __name__ == "__main__":
     import signal
     import pychromecast
+    import zeroconf
     signal.signal(signal.SIGINT, cleanup)
 
     main_disconnect_wrapper()

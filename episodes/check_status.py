@@ -6,7 +6,6 @@ import time
 if __name__ == "__main__":
     while True:
         # Run Every 15 minutes
-        time.sleep(15*60)
         try:
 
             controller.sendMsg(["status",None])
@@ -14,5 +13,6 @@ if __name__ == "__main__":
         except EOFError:
 
             print("Socket Closed.  Trying later")
+        time.sleep(15*60)
 
 
