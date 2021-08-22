@@ -6,6 +6,19 @@
  Issues
 =======
 
+First Attempt Fails
+-------------------
+
+After a long rest (may hours) the first attempt to play episodes does not work.
+It turns ont he chromecast, but the video is backgrounded.  I think this is a
+function of the New Google TV OS.  
+
+If i kill and reset, it corrects itself.  
+
+I might need to start and app, kill it, and then start the episode to fix this?
+Maybe if the active app is the background screen, i'll run that sequence.
+otherwise ill start the app directly?
+
 
 
 Feature Requests

@@ -9,6 +9,7 @@ from datetime import datetime
 #DEFAULT_CHROMECAST_NAME = "Living Room TV"
 DEFAULT_CHROMECAST_NAME = "Bedroom TV"
 
+
 # Put the socket into the instance folder
 UNIX_SOCKET_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)),"..","instance","cast_socket")
 
@@ -94,6 +95,19 @@ class Controller:
         
 
     def show(self,name, num):
+        rc = self.device.socket_client.receiver_controller
+
+        # If Backdrop is the current app, the TV is likely off.  Temporarily
+        # launch the media reciever in order to wake up the TV before launching
+        # the show
+        if rc.status.app_id == pychromecast.config.APP_BACKDROP:
+            rc.launch_app(pychromecast.config.APP_MEDIA_RECEIVER)
+            time.sleep(15)
+        
+        # Quit the current app before starting the show
+        self.device.quit_app()
+        time.sleep(5)
+
         print ("Playing ", name)
         mc = self.device.media_controller
 
