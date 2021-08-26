@@ -28,6 +28,12 @@ class Controller:
 
         self.browser = pychromecast.discovery.CastBrowser(pychromecast.discovery.SimpleCastListener(self.cast_add, self.cast_remove, self.cast_update), self.zconf)
         self.browser.start_discovery()
+        self.fail_counter = 0
+
+    def zconf_reset(self):
+        self.browser.stop_discovery()
+        time.sleep(5)
+        self.browser.start_discovery()
 
     def cast_add(self, uuid, _service):
         print("New Cast Found:",uuid)
@@ -56,6 +62,7 @@ class Controller:
         self.device =  pychromecast.get_chromecast_from_cast_info(info,self.zconf)
         self.device.wait()
         print (info.friendly_name,"is ready")
+        self.fail_counter = 0
     
     def reset(self):
         if not self.device.is_idle:
@@ -165,6 +172,10 @@ class Controller:
         # not attempt to execute any commands
         if self.device == None:
             print ("Chromecast Not Connected. Ingoring Command")
+            self.fail_counter += 1
+
+            if self.fail_counter > 5:
+                self.zconf_reset()
             return
             
         if cmd[0] == "reset":

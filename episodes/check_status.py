@@ -13,6 +13,6 @@ if __name__ == "__main__":
         except EOFError:
 
             print("Socket Closed.  Trying later")
-        time.sleep(15*60)
+        time.sleep(10*60)
 
 
