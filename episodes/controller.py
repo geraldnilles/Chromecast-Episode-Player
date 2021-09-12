@@ -35,10 +35,6 @@ class Controller:
 
     def zconf_reset(self):
         logging.info("Resetting ZeroConf Browser")
-        if self.device != None:
-            logging.warning("Disconnecting from Chromecast")
-            self.device.disconnect(5)
-            logging.warning("Disconnected")
         if self.zconf != None:
             logging.warning("Closing Zconf")
             self.zconf.close()
@@ -57,12 +53,21 @@ class Controller:
         logging.info("New Cast Found: "+str(uuid))
         self.cast_parse(uuid)
 
+    def disconnect(self, dev=-1):
+        if dev == -1:
+            dev = self.device
+        if dev != None:
+            logging.info("Disconnecting Chromecast")
+            dev.disconnect(5)
+            logging.info("Disconnected")
+
+
     def cast_remove(self, uuid, _service, cast_info):
         logging.info("Removing Cast: "+str(uuid))
         if self.browser.devices[uuid].friendly_name != self.name:
             return
         info = self.browser.devices[uuid]
-        self.device = None
+        self.disconnect()
         
 
     def cast_update(self, uuid, _service):
@@ -73,13 +78,28 @@ class Controller:
         if self.browser.devices[uuid].friendly_name != self.name:
             return
 
+        
         info = self.browser.devices[uuid]
 
         logging.info(str(info.friendly_name)+" Updated")
-        self.device =  pychromecast.get_chromecast_from_cast_info(info,self.zconf)
-        self.device.wait()
+        
+        # Backup Old Device
+        oldDevice = self.device
+        # Clear existing connections before we move forward
+        # Get New Device
+        newDevice =  pychromecast.get_chromecast_from_cast_info(info,self.zconf)
+        newDevice.wait(5)
         logging.info(str(info.friendly_name)+" is ready")
+        # When new device is ready, set the self.variable
+        self.device = newDevice
+        # And disconnect the old device assuming they are not the same
+        if oldDevice != newDevice:
+            self.disconnect(oldDevice)
+
+        newDevice.wait(5)
         self.fail_counter = 0
+        self.check_status()
+        # Set the timestamp the connection was last setup
     
     def reset(self):
         if not self.device.is_idle:
