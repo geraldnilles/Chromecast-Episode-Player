@@ -3,11 +3,14 @@
 import time
 import os
 import random
+import logging
 
 from datetime import datetime
 
 #DEFAULT_CHROMECAST_NAME = "Living Room TV"
 DEFAULT_CHROMECAST_NAME = "Bedroom TV"
+    
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 
 # Put the socket into the instance folder
@@ -24,32 +27,46 @@ class Controller:
         self.chromecasts = None 
         self.device = None
 
-        self.zconf = zeroconf.Zeroconf()
+        self.zconf = None
 
-        self.browser = pychromecast.discovery.CastBrowser(pychromecast.discovery.SimpleCastListener(self.cast_add, self.cast_remove, self.cast_update), self.zconf)
-        self.browser.start_discovery()
+        self.browser = None
         self.fail_counter = 0
+        self.zconf_reset()
 
     def zconf_reset(self):
-        self.browser.stop_discovery()
-        time.sleep(5)
+        logging.info("Resetting ZeroConf Browser")
+        if self.device != None:
+            logging.warning("Disconnecting from Chromecast")
+            self.device.disconnect(5)
+            logging.warning("Disconnected")
+        if self.zconf != None:
+            logging.warning("Closing Zconf")
+            self.zconf.close()
+            logging.warning("Zconf Closed")
+            time.sleep(5)
+
+        logging.info("Starting Zconf")
+        self.zconf = zeroconf.Zeroconf()
+
+        logging.info("Starting Browser")
+        self.browser = pychromecast.discovery.CastBrowser(pychromecast.discovery.SimpleCastListener(self.cast_add, self.cast_remove, self.cast_update), self.zconf)
         self.browser.start_discovery()
+        logging.info("ZeroConf Started")
 
     def cast_add(self, uuid, _service):
-        print("New Cast Found:",uuid)
+        logging.info("New Cast Found: "+str(uuid))
         self.cast_parse(uuid)
 
     def cast_remove(self, uuid, _service, cast_info):
-        print("Removing Cast:",uuid)
+        logging.info("Removing Cast: "+str(uuid))
         if self.browser.devices[uuid].friendly_name != self.name:
             return
         info = self.browser.devices[uuid]
-        print (info.friendly_name,"Removed")
         self.device = None
         
 
     def cast_update(self, uuid, _service):
-        print("Updating Cast:",uuid)
+        logging.info("Updating Cast: "+str(uuid))
         self.cast_parse(uuid)
 
     def cast_parse(self,uuid):
@@ -58,10 +75,10 @@ class Controller:
 
         info = self.browser.devices[uuid]
 
-        print (info.friendly_name,"Updated")
+        logging.info(str(info.friendly_name)+" Updated")
         self.device =  pychromecast.get_chromecast_from_cast_info(info,self.zconf)
         self.device.wait()
-        print (info.friendly_name,"is ready")
+        logging.info(str(info.friendly_name)+" is ready")
         self.fail_counter = 0
     
     def reset(self):
@@ -72,8 +89,13 @@ class Controller:
 
     def volume(self,level):
         rc = self.device.socket_client.receiver_controller
+        # If no status is set, bail and let the user try again later
+        if rc.status == None:
+            logging.warning("Status Not Set.  Bailing")
+            self.check_status()
+            return
+
         prev = rc.status.volume_level
-        print ("Volume currently set to ",rc.status.volume_level)
 
         # Special Cases: 1 will be mean step volume down 5%.  
         #                2 will mean volume up 5%
@@ -91,19 +113,29 @@ class Controller:
         rc.set_volume(level)
 
         def cb_fun(status):
-            print ("Volume now set to ",rc.status.volume_level)
+            logging.info("Volume now set to "+str(rc.status.volume_level))
         rc.update_status(cb_fun)
 
     def check_status(self):
         rc = self.device.socket_client.receiver_controller
         def cb_fun(status):
-            print ("Chromecast Status: ",rc.status)
+            logging.info("Current App: " + repr(rc.status.app_id))
+            logging.debug("Chromecast Status: " + repr(rc.status))
         rc.update_status(cb_fun)
         
 
     def show(self,name, num):
         rc = self.device.socket_client.receiver_controller
 
+
+        # If status is not set, abort and let the user try again
+        # This is done to avoid an error while we wait for the system to recover
+        # Idealy, id use the status callback function to send the show when ready
+        if rc.status == None:
+            logging.warning("Status Not Set.  Bailing")
+            self.check_status()
+            return
+            
         # If Backdrop is the current app, the TV is likely off.  Temporarily
         # launch the media reciever in order to wake up the TV before launching
         # the show
@@ -115,7 +147,7 @@ class Controller:
         self.device.quit_app()
         time.sleep(5)
 
-        print ("Playing ", name)
+        logging.info("Playing "+ str(name))
         mc = self.device.media_controller
 
         # Get the aboslute path
@@ -151,11 +183,11 @@ class Controller:
         enqueue = False
         for e in sel:
             if enqueue:
-                print ("Queueing up ",e)
+                logging.info ("Queueing up "+e)
                 mc.play_media("http://10.0.0.200:8765/library/"+name+"/"+e,
                                 'video/mp4', enqueue=enqueue)
             else:
-                print ("Starting with ",e)
+                logging.info ("Starting with "+e)
                 mc.play_media("http://10.0.0.200:8765/library/"+name+"/"+e,
                                 'video/mp4', enqueue=enqueue)
                 mc.block_until_active(10)
@@ -171,37 +203,38 @@ class Controller:
         # If device is None, that means no chromecast was detected.  We will
         # not attempt to execute any commands
         if self.device == None:
-            print ("Chromecast Not Connected. Ingoring Command")
+            logging.error("Chromecast Not Connected. Ingoring Command")
             self.fail_counter += 1
+            logging.info("Fail Counter increased to %d"%(self.fail_counter))
 
             if self.fail_counter > 5:
+                logging.error("Trying to Reset ZeroConf")
                 self.zconf_reset()
             return
             
         if cmd[0] == "reset":
-            print("Reconnectig to Chromecast...")
+            logging.info("Reconnectig to Chromecast...")
             self.reset()
-            print("Ready")
             return
 
         if cmd[0] == "stop":
             self.stop()
-            print("Stopping")
+            logging.info("Stopping")
             return
 
         if cmd[0] == "status":
             self.check_status()
-            print("Checking Status")
+            logging.info("Checking Status")
             return
 
         if cmd[0] == "volume":
             self.volume(cmd[1]) 
-            print("Adjusting Volume")
+            logging.info("Adjusting Volume")
             return
 
         if cmd[0] == "show":
             self.show(cmd[1], cmd[2]) 
-            print("Starting a Show")
+            logging.info("Starting a Show")
             return
 
 
@@ -214,11 +247,11 @@ def main():
         while True:
             with listener.accept() as conn:
                 cmd = conn.recv()
-                print(repr(cmd))
+                logging.debug(repr(cmd))
                 try:
                     c.parse_command(cmd)
                 except pychromecast.error.NotConnected:
-                    print ("Connection Lost. Clearing Connection")
+                    logging.error ("Connection Lost. Clearing Connection")
                     c.device = None
                 conn.send("OK")
 
@@ -260,6 +293,8 @@ if __name__ == "__main__":
     import signal
     import pychromecast
     import zeroconf
+
+
     signal.signal(signal.SIGINT, cleanup)
 
     main_disconnect_wrapper()
