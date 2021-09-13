@@ -91,15 +91,18 @@ class Controller:
         # Clear existing connections before we move forward
         # Get New Device
         newDevice =  pychromecast.get_chromecast_from_cast_info(info,self.zconf)
-        newDevice.wait(5)
+        newDevice.wait(15)
         logging.info(str(info.friendly_name)+" is ready")
-        # When new device is ready, set the self.variable
+        # When new device is ready, set the self variable
         self.device = newDevice
         # And disconnect the old device assuming they are not the same
         if oldDevice != newDevice:
             self.disconnect(oldDevice)
+            time.sleep(1)
 
         self.fail_counter = 0
+
+        self.device.wait(15)
         self.check_status()
         # Set the timestamp the connection was last setup
         self.age = time.time()
