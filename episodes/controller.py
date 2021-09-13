@@ -32,6 +32,7 @@ class Controller:
         self.browser = None
         self.fail_counter = 0
         self.zconf_reset()
+        self.age = 0
 
     def zconf_reset(self):
         logging.info("Resetting ZeroConf Browser")
@@ -54,6 +55,8 @@ class Controller:
         self.cast_parse(uuid)
 
     def disconnect(self, dev=-1):
+        if time.time()-self.age < 30:
+            return
         if dev == -1:
             dev = self.device
         if dev != None:
@@ -96,10 +99,10 @@ class Controller:
         if oldDevice != newDevice:
             self.disconnect(oldDevice)
 
-        newDevice.wait(5)
         self.fail_counter = 0
         self.check_status()
         # Set the timestamp the connection was last setup
+        self.age = time.time()
     
     def reset(self):
         if not self.device.is_idle:
