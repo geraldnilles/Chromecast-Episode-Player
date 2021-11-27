@@ -10,5 +10,9 @@ cd ..
 
 cd episodes/
 
-python check_status.py
+while true
+do
+    sleep 30
+    python check_status.py
+done
 

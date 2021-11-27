@@ -3,16 +3,7 @@ import controller
 import time
 
 
-if __name__ == "__main__":
-    while True:
-        # Run Every 15 minutes
-        try:
+print(controller.sendMsg(["status",None]))
 
-            controller.sendMsg(["status",None])
-
-        except EOFError:
-
-            print("Socket Closed.  Trying later")
-        time.sleep(30)
 
 
