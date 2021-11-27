@@ -145,7 +145,7 @@ class Controller:
     def check_status(self):
         rc = self.device.socket_client.receiver_controller
         def cb_fun(status):
-            logging.info("Current App: " + repr(rc.status.app_id))
+            logging.debug("Current App: " + repr(rc.status.app_id))
             logging.debug("Chromecast Status: " + repr(rc.status))
         rc.update_status(cb_fun)
         
@@ -251,7 +251,7 @@ class Controller:
 
         if cmd[0] == "status":
             self.check_status()
-            logging.info("Checking Status")
+            logging.debug("Checking Status")
             return
 
         if cmd[0] == "volume":
