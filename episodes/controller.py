@@ -274,11 +274,7 @@ def main():
             with listener.accept() as conn:
                 cmd = conn.recv()
                 logging.debug(repr(cmd))
-                try:
-                    c.parse_command(cmd)
-                except pychromecast.error.NotConnected:
-                    logging.error ("Connection Lost. Clearing Connection")
-                    c.device = None
+                c.parse_command(cmd)
                 conn.send("OK")
 
 
