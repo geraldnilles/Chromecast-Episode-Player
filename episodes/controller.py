@@ -234,8 +234,9 @@ class Controller:
             logging.info("Fail Counter increased to %d"%(self.fail_counter))
 
             if self.fail_counter > 5:
-                logging.error("Trying to Reset ZeroConf")
-                self.zconf_reset()
+                logging.error("Killing after 5 bad")
+                assert EOFError
+
             return
             
         if cmd[0] == "reset":
