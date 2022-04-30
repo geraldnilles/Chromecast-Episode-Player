@@ -8,5 +8,5 @@ cd "$(dirname "$0")"
 export FLASK_APP=episodes
 export FLASK_ENV=development
 
-flask run -p 8765 --host=0.0.0.0 
+flask run -p 8080 --host=0.0.0.0 
 
