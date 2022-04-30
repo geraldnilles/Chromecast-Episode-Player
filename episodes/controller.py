@@ -188,7 +188,7 @@ class Controller:
             ,"..","library",name )
             )
         try:
-            eps = os.listdir(lib_path)
+            eps = sorted(os.listdir(lib_path))
         except:
             print("Show was not found")
             eps = []
@@ -198,10 +198,14 @@ class Controller:
 
         # If number of library episodes is more than "num", then randomly
         # select a chunk of sequential episodes
-
         if len(eps) > num:
             i = random.randrange(len(eps)-num+1)
             sel = eps[i:i+num]
+        else:
+            """
+            If not, select the entire epsidoe list
+            """
+            sel = eps
 
         # We want the first video to be nromal. and all subsequent videos be
         # enqueued
