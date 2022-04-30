@@ -1,0 +1,15 @@
+[Unit]
+Description=Chromecast Episode Player Controller
+Requires=chromecastEpisodes_heartbeat.service
+
+[Service]
+Type=simple
+ExecStart=/opt/Chromecast-Episode-Player/scripts/controller.sh
+Restart=always
+RestartSec=5
+
+
+[Install]
+WantedBy=multi-user.target
+
+
