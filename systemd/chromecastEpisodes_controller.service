@@ -1,6 +1,7 @@
 [Unit]
 Description=Chromecast Episode Player Controller
 Requires=chromecastEpisodes_heartbeat.service
+After=systemd-networkd.service
 
 [Service]
 Type=simple
