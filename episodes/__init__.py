@@ -35,13 +35,13 @@ def create_app(test_config=None):
         return send_from_directory(app.root_path+"/../library/",filename)
 
     @app.route('/show/<name>/<int:count>',methods=['GET'])
-    def rewind(name="Friends",count=5):
+    def play(name,count=5):
         # TODO Check if a show is aleady in the queue and dont add.
         controller.sendMsg(["show",name,count])
         return "Playing some episodes"
 
     @app.route('/volume/<int:level>',methods=['GET'])
-    def forward(level=30):
+    def volume(level=30):
         controller.sendMsg(["volume",level])
         return "Adjusting the volume"
 
