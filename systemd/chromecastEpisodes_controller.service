@@ -2,6 +2,7 @@
 Description=Chromecast Episode Player Controller
 Requires=chromecastEpisodes_heartbeat.service
 After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
