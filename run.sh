@@ -2,7 +2,7 @@
 
 cd "$(dirname "$0")"
 
-if [[ -f venv ]]
+if [[ -d venv ]]
 then
 	. venv/bin/activate
 fi

@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 # Jump back to the root
 cd ..
 
-if [[ -f venv ]]
+if [[ -d venv ]]
 then
 	. venv/bin/activate
 fi
