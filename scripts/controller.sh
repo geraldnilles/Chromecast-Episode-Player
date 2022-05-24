@@ -10,5 +10,5 @@ cd ..
 
 rm instance/cast_socket
 
-python episodes/controller.py
+python3 episodes/controller.py
 
