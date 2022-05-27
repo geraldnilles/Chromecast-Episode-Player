@@ -13,5 +13,5 @@ fi
 
 rm instance/cast_socket
 
-python episodes/controller.py
+./episodes/controller.py
 

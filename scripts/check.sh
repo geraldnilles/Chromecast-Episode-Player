@@ -16,6 +16,6 @@ cd episodes/
 while true
 do
     sleep 30
-    python check_status.py
+    ./check_status.py
 done
 
