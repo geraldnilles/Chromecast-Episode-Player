@@ -4,6 +4,7 @@ import time
 import os
 import random
 import logging
+import socket
 
 from datetime import datetime
 
@@ -214,11 +215,11 @@ class Controller:
         for e in sel:
             if enqueue:
                 logging.info ("Queueing up "+e)
-                mc.play_media("http://arch-episodes.lan:8080/library/"+name+"/"+e,
+                mc.play_media("http://"+socket.gethostname()+".lan:8080/library/"+name+"/"+e,
                                 'video/mp4', enqueue=enqueue)
             else:
                 logging.info ("Starting with "+e)
-                mc.play_media("http://arch-episodes.lan:8080/library/"+name+"/"+e,
+                mc.play_media("http://"+socket.gethostname()+".lan:8080/library/"+name+"/"+e,
                                 'video/mp4', enqueue=enqueue)
                 mc.block_until_active(10)
                 enqueue = True
