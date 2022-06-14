@@ -7,7 +7,7 @@ function bind_show(){
             // Remove the on-click for now so that we cant add more buttons
             var value = e.target.closest("button").innerText;
             var count = document.querySelector("input.episodeCount").value;
-            send_request("show/"+value+"/"+count);
+            send_request("show/"+value+"/"+count+"/"+get_device_name());
         }
     }
 }
@@ -19,7 +19,7 @@ function bind_volume(){
         b.onclick = function(e){
             // Remove the on-click for now so that we cant add more buttons
             var value = e.target.closest("button").value;
-            send_request("volume/"+value);
+            send_request("volume/"+value+"/"+get_device_name());
         }
     }
 }
@@ -30,21 +30,11 @@ function bind_stop(){
         var b = buttons[i];
         b.onclick = function(e){
             // Remove the on-click for now so that we cant add more buttons
-            send_request("stop");
+            send_request("stop"+"/"+get_device_name());
         }
     }
 }
 
-function bind_reset(){
-    var buttons = document.querySelectorAll("button.reset");
-	for (var i = 0; i < buttons.length; i++){
-        var b = buttons[i];
-        b.onclick = function(e){
-            // Remove the on-click for now so that we cant add more buttons
-            send_request("reset");
-        }
-    }
-}
 
 function send_request(url){
     var request = new XMLHttpRequest();
@@ -66,11 +56,17 @@ function bind_slider(){
         // s.value = 5;
         document.querySelector("span.episodeCount").innerText = s.value;
         s.onchange = function(e){
-            //send_request("reset");
             // alert("Slider Moved "+e.target.value);
             document.querySelector("span.episodeCount").innerText = e.target.value;
         }
     }
+}
+
+function get_device_name(){
+    /* Returns the name of the chromecast device which is currently selected
+     * by the DOM elements
+     */
+    return document.querySelector("button.device.active").innerText;
 }
 
 
@@ -78,7 +74,6 @@ function bind_buttons(){
     bind_show();
     bind_volume();
     bind_stop();
-    bind_reset();
     bind_slider();
 }
 

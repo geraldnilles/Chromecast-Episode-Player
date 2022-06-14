@@ -39,6 +39,13 @@
             <button value=50 class="btn-lg btn-info volume">50%</button>
             <button value=2 class="btn-lg btn-info volume"><i class="material-icons">volume_up</i></button>
         </div>
+        <div class="pb-3  " >
+		<div class="btn-group">
+		    {% for device in devices %}
+		    <button class="btn btn-secondary device">{{ device }}</button>
+		    {% endfor %}
+		</div>
+        </div>
     </div>
 </div>
 

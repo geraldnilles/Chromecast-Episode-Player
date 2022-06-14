@@ -4,7 +4,9 @@ from flask import Flask
 from flask import render_template
 from flask import send_from_directory
 
-from . import controller
+from castcontroller import client, Command
+
+import time
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
@@ -28,36 +30,72 @@ def create_app(test_config=None):
             if os.path.isdir( os.path.join( libpath,f ) ):
                 libdirs.append( f )
 
-        return render_template('main.html', shows=libdirs )
+        devices = sorted(client({"cmd":Command.find_devs,"args":[True]}))
+        return render_template('main.html', shows=libdirs ,devices=devices )
 
     @app.route('/library/<path:filename>')
     def library(filename):
         return send_from_directory(app.root_path+"/../library/",filename)
 
-    @app.route('/show/<name>/<int:count>',methods=['GET'])
-    def play(name,count=5):
-        # TODO Check if a show is aleady in the queue and dont add.
-        controller.sendMsg(["show",name,count])
+    @app.route('/show/<name>/<int:count>/<device>',methods=['GET'])
+    def show(name,count,device):
+        # Play a random selection of episodes
+
+        # Send the "stop" command in the event something is already playing
+        client({
+            "cmd":Command.stop,
+            "device":device
+            })
+        time.sleep(3)
+        
+        show_path = os.path.join(os.path.abspath( app.root_path+"/../library" ),name)
+        eps = sorted(os.listdir(show_path))
+
+        if len(eps) > count:
+            i = random.randrange(len(eps)-count+1)
+            selection = eps[i:i+count]
+        else:
+            """
+            If not, select the entire epsidoe list
+            """
+            selection = eps
+
+        # First episode will NOT be enqueued, but the remaining ones will be
+        # enqueued
+        enqueue = False
+        for e in selection:
+            client({
+                "device":device, 
+                "cmd":Command.play, 
+                "args":[
+                    "http://"+socket.gethostname()+".lan:8080/library/"+name+"/"+e, 
+                    'video/mp4',
+                    enqueue ]
+                })
+            enqueue = True
+
         return "Playing some episodes"
 
-    @app.route('/volume/<int:level>',methods=['GET'])
-    def volume(level=30):
+    # TODO Add Next button
+
+    @app.route('/volume/<int:level>/<device>',methods=['GET'])
+    def volume(level,device):
         controller.sendMsg(["volume",level])
+        client({
+            "cmd":Command.volume,
+            "device":device,
+            "args":[level]
+            })
         return "Adjusting the volume"
 
 
-    @app.route('/stop',methods=['GET'])
-    def stop():
-        controller.sendMsg(["stop",None])
+    @app.route('/stop/<device>',methods=['GET'])
+    def stop(device):
+        client({
+            "cmd":Command.stop,
+            "device":device
+            })
         return "Stopping Playback"
-
-    @app.route('/reset',methods=['GET'])
-    def reset():
-        controller.sendMsg(["reset",None])
-        return "Refreshing"
-
-    #from . import api
-    #app.register_blueprint(api.bp)
 
     return app
 
