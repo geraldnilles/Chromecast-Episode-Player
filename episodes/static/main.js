@@ -69,12 +69,27 @@ function get_device_name(){
     return document.querySelector("button.device.active").innerText;
 }
 
+function bind_device_toggle(){
+    var buttons = document.querySelectorAll("button.device");
+    // By default, activate the first device in the list
+    buttons[0].classList.add("active");
+    buttons.forEach(function(b){
+        b.onclick = function(e){
+            buttons.forEach(function(a){
+                a.classList.remove("active"); 
+            });
+            e.target.classList.add("active");
+        }
+    });
+}
+
 
 function bind_buttons(){
     bind_show();
     bind_volume();
     bind_stop();
     bind_slider();
+    bind_device_toggle();
 }
 
 bind_buttons();
