@@ -6,6 +6,9 @@ from flask import send_from_directory
 
 from castcontroller import client, Command
 
+import socket
+import random
+
 import time
 
 def create_app(test_config=None):
@@ -80,7 +83,6 @@ def create_app(test_config=None):
 
     @app.route('/volume/<int:level>/<device>',methods=['GET'])
     def volume(level,device):
-        controller.sendMsg(["volume",level])
         client({
             "cmd":Command.volume,
             "device":device,
