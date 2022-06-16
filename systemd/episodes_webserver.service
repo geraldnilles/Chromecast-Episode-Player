@@ -1,6 +1,5 @@
 [Unit]
 Description=Chromecast Episode Player Web Server
-Requires=chromecastEpisodes_controller.service
 After=network-online.target
 Wants=network-online.target
 
