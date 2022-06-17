@@ -33,7 +33,7 @@ def create_app(test_config=None):
             if os.path.isdir( os.path.join( libpath,f ) ):
                 libdirs.append( f )
 
-        devices = sorted(client({"cmd":Command.find_devs,"args":[True]}))
+        devices = sorted(client({"cmd":Command.find_devs}))
         return render_template('main.html', shows=libdirs ,devices=devices )
 
     @app.route('/library/<path:filename>')
