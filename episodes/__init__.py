@@ -71,7 +71,7 @@ def create_app(test_config=None):
                 "device":device, 
                 "cmd":Command.play, 
                 "args":[
-                    "http://"+socket.gethostname()+".lan:8080/library/"+name+"/"+e, 
+                    "http://"+socket.gethostbyname(socket.gethostname())+":8080/library/"+name+"/"+e, 
                     'video/mp4',
                     enqueue ]
                 })
