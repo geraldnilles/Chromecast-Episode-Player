@@ -7,7 +7,7 @@ function bind_show(){
             // Remove the on-click for now so that we cant add more buttons
             var value = e.target.closest("button").innerText;
             var count = document.querySelector("input.episodeCount").value;
-            send_request("show/"+value+"/"+count+"/"+get_device_name());
+            send_request("./show/"+value+"/"+count+"/"+get_device_name());
         }
     }
 }
@@ -19,7 +19,7 @@ function bind_volume(){
         b.onclick = function(e){
             // Remove the on-click for now so that we cant add more buttons
             var value = e.target.closest("button").value;
-            send_request("volume/"+value+"/"+get_device_name());
+            send_request("./volume/"+value+"/"+get_device_name());
         }
     }
 }
@@ -30,7 +30,7 @@ function bind_stop(){
         var b = buttons[i];
         b.onclick = function(e){
             // Remove the on-click for now so that we cant add more buttons
-            send_request("stop"+"/"+get_device_name());
+            send_request("./stop"+"/"+get_device_name());
         }
     }
 }
