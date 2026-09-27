@@ -2,13 +2,16 @@
    "name": "Episode Player",
    "short_name": "Episodes",
    "display": "standalone",
+   "start_url": "/",
+   "scope": "/",
    "background_color": "#fff",
+   "theme_color": "#7fffd4",
    "icons": [{
-        "src": "static/icon-192.png",
+        "src": "icon-192.png",
         "type": "image/png",
         "sizes": "192x192"
       },{
-        "src": "static/icon-512.png",
+        "src": "icon-512.png",
         "type": "image/png",
         "sizes": "512x512"
       }

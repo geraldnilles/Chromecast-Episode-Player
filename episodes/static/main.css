@@ -1,0 +1,10 @@
+/* Page-level theming for the Random Episode Player.
+   Kept deliberately small: layout itself comes from Bootstrap. */
+
+.app-container {
+    background: aquamarine;
+}
+
+.episode-count {
+    height: 50px;
+}
