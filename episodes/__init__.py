@@ -144,20 +144,21 @@ def create_app(test_config=None):
             # If not, select the entire episode list.
             selection = eps
 
-        # First episode will NOT be enqueued, but the remaining ones will be.
+        # Build the ordered list of URLs and hand the *whole* selection to the
+        # controller in a single command. The controller loads the first episode,
+        # waits for the media session to become active, then enqueues the rest on
+        # the same connection. Doing this per-episode (one connection each) used
+        # to fail because an enqueue requires an already-active media session.
         base = _base_url()
-        enqueue = False
-        for e in selection:
-            client({
-                "device": device,
-                "cmd": Command.play,
-                "args": [
-                    base + "/library/" + name + "/" + e,
-                    'video/mp4',
-                    enqueue
-                ]
-            })
-            enqueue = True
+        urls = [
+            base + "/library/" + name + "/" + e
+            for e in selection
+        ]
+        client({
+            "device": device,
+            "cmd": Command.play_show,
+            "args": [urls, 'video/mp4']
+        })
 
         return no_store(jsonify(ok=True))
 
